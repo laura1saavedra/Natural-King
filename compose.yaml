@@ -1,0 +1,19 @@
+services:
+  database:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: natural_king
+      POSTGRES_USER: natural_king
+      POSTGRES_PASSWORD: natural_king
+    ports:
+      - "5432:5432"
+    volumes:
+      - natural_king_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U natural_king -d natural_king"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  natural_king_postgres:
