@@ -137,15 +137,20 @@ model Order {
   shippingCost        Decimal        @db.Decimal(12, 2)
   total               Decimal        @db.Decimal(12, 2)
   recipientName       String
+  recipientEmail      String
   recipientPhone      String
+  documentType        String
+  documentNumber      String
   shippingLine1       String
   shippingLine2       String?
   shippingCity        String
   shippingDepartment  String
+  shippingNeighborhood String?
   shippingPostalCode  String?
   shippingInstructions String?
-  userId              String
-  user                User           @relation(fields: [userId], references: [id])
+  shippingMethod      String
+  userId              String?
+  user                User?          @relation(fields: [userId], references: [id])
   items               OrderItem[]
   payments            Payment[]
   statusHistory       OrderStatusHistory[]

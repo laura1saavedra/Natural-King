@@ -3,7 +3,7 @@ const navigation = [
   { label: 'Productos', href: '#productos', page: 'products' },
 ]
 
-export default function Header({ currentPage }) {
+export default function Header({ currentPage, cartQuantity = 0 }) {
   return (
     <header className="site-header flex min-h-[92px] flex-wrap items-center justify-between gap-x-10 gap-y-3 bg-brand-green px-[clamp(24px,6vw,88px)] py-2 max-[700px]:min-h-0 max-[700px]:gap-x-[18px] max-[700px]:px-[18px] max-[700px]:py-3.5">
       <a
@@ -45,12 +45,31 @@ export default function Header({ currentPage }) {
         })}
       </nav>
 
-      <a
+      <div className="site-header__actions flex shrink-0 items-center gap-4 max-[700px]:gap-2.5">
+        <a
+          className="site-header__cart relative grid h-12 w-12 shrink-0 place-items-center rounded-full border border-brand-gold/45 bg-white/5 transition duration-200 hover:-translate-y-0.5 hover:bg-white/10 focus-visible:-translate-y-0.5 focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-brand-gold max-[700px]:h-10 max-[700px]:w-10"
+          href="#carrito"
+          aria-label={`Ir al carrito, ${cartQuantity} ${cartQuantity === 1 ? 'producto' : 'productos'}`}
+        >
+          <img
+            className="block h-8 w-8 object-contain max-[700px]:h-7 max-[700px]:w-7"
+            src="/img/iconos/carrito.png"
+            alt=""
+          />
+          {cartQuantity > 0 && (
+            <span className="absolute -top-1.5 -right-1.5 grid min-h-5 min-w-5 place-items-center rounded-full bg-brand-gold px-1 text-[11px] font-black text-brand-green">
+              {cartQuantity > 99 ? '99+' : cartQuantity}
+            </span>
+          )}
+        </a>
+
+        <a
         className="site-header__contact shrink-0 rounded-full bg-brand-gold px-[31px] py-3.5 text-[15px] font-bold whitespace-nowrap text-brand-green no-underline transition duration-200 hover:-translate-y-0.5 hover:bg-brand-gold-hover focus-visible:-translate-y-0.5 focus-visible:bg-brand-gold-hover focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-brand-gold max-[700px]:px-[18px] max-[700px]:py-3 max-[700px]:text-sm max-[390px]:px-3.5"
         href="#contacto"
       >
         Contáctanos
-      </a>
+        </a>
+      </div>
     </header>
   )
 }

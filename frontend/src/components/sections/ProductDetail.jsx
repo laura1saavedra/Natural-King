@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { api } from '../../services/api.js'
 
 const includedItems = [
   ['Jabón para el cuerpo', '1 unidad'],
@@ -20,8 +21,7 @@ const detailBenefits = [
   ['◇', 'Prácticos', 'Listo para llevar y usar donde estés.'],
 ]
 
-const galleryImages = [
-  { src: '/img/kitPersonal.png', alt: 'Kit de limpieza personal completo' },
+const detailGalleryImages = [
   { src: '/img/kit_personal/jabon.png', alt: 'Jabón para el cuerpo' },
   { src: '/img/kit_personal/gel%20antibacterial.png', alt: 'Alcohol gel antibacterial' },
   { src: '/img/kit_personal/bloqueador.png', alt: 'Bloqueador solar' },
@@ -34,34 +34,99 @@ const galleryImages = [
   { src: '/img/kit_personal/toalla.png', alt: 'Toalla pequeña' },
 ]
 
-const unitPrice = 74500
-const priceFormatter = new Intl.NumberFormat('es-CO')
+const priceFormatter = new Intl.NumberFormat('es-CO', {
+  style: 'currency',
+  currency: 'COP',
+  maximumFractionDigits: 0,
+})
+
+const initialProduct = {
+  id: 'catalog-kit-limpieza-personal',
+  name: 'Kit de limpieza personal',
+  slug: 'kit-limpieza-personal',
+  description: 'Todo lo que necesitas para tu cuidado diario, en un solo kit práctico, seguro y amigable con el medio ambiente.',
+  price: 74500,
+  stock: 0,
+  imageUrl: '/img/kitPersonal.png',
+  category: { name: 'Cuidado personal' },
+}
 
 export default function ProductDetail({ onAddToCart }) {
+  const [product, setProduct] = useState(initialProduct)
+  const [hasLiveData, setHasLiveData] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState('')
   const [quantity, setQuantity] = useState(1)
   const [isFavorite, setIsFavorite] = useState(false)
   const [message, setMessage] = useState('')
   const [selectedImage, setSelectedImage] = useState(0)
 
+  useEffect(() => {
+    const controller = new AbortController()
+    let retryTimer
+
+    async function loadProduct() {
+      try {
+        const data = await api('/products/slug/kit-limpieza-personal', { signal: controller.signal })
+        setProduct(data)
+        setQuantity(data.stock > 0 ? 1 : 0)
+        setHasLiveData(true)
+        setError('')
+      } catch (requestError) {
+        if (requestError.name !== 'AbortError') {
+          setHasLiveData(false)
+          setError('Intentando conectar con la API local...')
+          retryTimer = window.setTimeout(loadProduct, 3000)
+        }
+      } finally {
+        if (!controller.signal.aborted) setIsLoading(false)
+      }
+    }
+
+    loadProduct()
+
+    return () => {
+      controller.abort()
+      window.clearTimeout(retryTimer)
+    }
+  }, [])
+
+  const galleryImages = useMemo(() => {
+    return [
+      {
+        src: product.imageUrl || '/img/kitPersonal.png',
+        alt: `${product.name} completo`,
+      },
+      ...detailGalleryImages,
+    ]
+  }, [product])
+
   function addToCart() {
+    if (!hasLiveData || product.stock < 1) return
+
     setMessage(`${quantity} kit${quantity > 1 ? 's' : ''} agregado${quantity > 1 ? 's' : ''} al carrito`)
-    onAddToCart(quantity)
+    onAddToCart(product, quantity)
   }
 
+  const unitPrice = Number(product.price)
+  const isOutOfStock = hasLiveData && product.stock < 1
+  const canPurchase = hasLiveData && !isOutOfStock
+
   return (
-    <section className="product-detail" id="kit-personal" aria-labelledby="personal-kit-title">
+    <section className="product-detail" id="kit_personal" aria-labelledby="personal-kit-title" aria-busy={isLoading}>
       <nav className="product-breadcrumb" aria-label="Ruta de navegación">
         <a href="#inicio"><span aria-hidden="true">⌂</span> Inicio</a>
         <span aria-hidden="true">›</span>
         <a href="#productos">Productos</a>
         <span aria-hidden="true">›</span>
-        <span>Kit de limpieza personal</span>
+        <span>{product.name}</span>
       </nav>
 
       <div className="product-detail__layout">
         <div className="product-gallery">
           <div className="product-gallery__main">
             <img src={galleryImages[selectedImage].src} alt={galleryImages[selectedImage].alt} />
+            <span className="product-gallery__badge">Kit completo</span>
           </div>
           <div className="product-gallery__thumbs" aria-label="Imágenes del producto">
             {galleryImages.map((image, index) => (
@@ -80,9 +145,15 @@ export default function ProductDetail({ onAddToCart }) {
         </div>
 
         <div className="product-detail__content">
-          <span className="product-detail__tag">Kit completo</span>
-          <h1 id="personal-kit-title">Kit de limpieza personal</h1>
-          <p className="product-detail__intro">Todo lo que necesitas para tu cuidado diario, en un solo kit práctico, seguro y amigable con el medio ambiente.</p>
+          <span className="product-detail__tag">{product.category.name}</span>
+          <h1 id="personal-kit-title">{product.name}</h1>
+          <p className="product-detail__intro">{product.description}</p>
+
+          <div className="product-detail__highlights" aria-label="Características principales">
+            <span>✓ 10 productos esenciales</span>
+            <span>✓ Listo para usar</span>
+            <span>✓ Empaque reutilizable</span>
+          </div>
 
           <div className="product-contents">
             <h2>
@@ -112,27 +183,33 @@ export default function ProductDetail({ onAddToCart }) {
           </div>
         </div>
 
-        <aside className="product-purchase" aria-label="Comprar kit de limpieza personal">
+        <aside className="product-purchase" aria-label={`Comprar ${product.name}`}>
           <div className="product-purchase__summary">
             <div>
               <h2>Tu kit</h2>
-              <p>Kit de limpieza personal</p>
+              <p>{product.name}</p>
             </div>
-            <img src="/img/kitPersonal.png" alt="" aria-hidden="true" />
+            <img src={product.imageUrl || '/img/kitPersonal.png'} alt="" aria-hidden="true" />
           </div>
 
           <p className="product-purchase__price" aria-live="polite">
-            ${priceFormatter.format(unitPrice * quantity)}
+            {priceFormatter.format(unitPrice * quantity)}
           </p>
+          <p className={`product-purchase__availability ${isOutOfStock ? 'is-out' : ''} ${!hasLiveData ? 'is-pending' : ''}`}>
+            {!hasLiveData ? 'Disponibilidad por confirmar' : isOutOfStock ? 'Producto agotado' : `${product.stock} unidades disponibles`}
+          </p>
+          {error && <p className="product-purchase__connection" role="status">{error}</p>}
+
+          <p className="product-purchase__quantity-label">Selecciona la cantidad</p>
 
           <div className="quantity-selector" aria-label="Cantidad">
-            <button type="button" onClick={() => setQuantity((value) => Math.max(1, value - 1))} aria-label="Disminuir cantidad">−</button>
+            <button type="button" onClick={() => setQuantity((value) => Math.max(1, value - 1))} disabled={!canPurchase || quantity <= 1} aria-label="Disminuir cantidad">−</button>
             <output aria-live="polite">{quantity}</output>
-            <button type="button" onClick={() => setQuantity((value) => value + 1)} aria-label="Aumentar cantidad">+</button>
+            <button type="button" onClick={() => setQuantity((value) => Math.min(product.stock, value + 1))} disabled={!canPurchase || quantity >= product.stock} aria-label="Aumentar cantidad">+</button>
           </div>
 
-          <button className="product-purchase__cart" type="button" onClick={addToCart}>
-            <span aria-hidden="true">▰</span> Agregar al carrito
+          <button className="product-purchase__cart" type="button" onClick={addToCart} disabled={!canPurchase}>
+            <span aria-hidden="true">▰</span> {!hasLiveData ? 'Consultando disponibilidad' : isOutOfStock ? 'Producto agotado' : 'Agregar al carrito'}
           </button>
           <button
             className={`product-purchase__favorite ${isFavorite ? 'is-active' : ''}`}

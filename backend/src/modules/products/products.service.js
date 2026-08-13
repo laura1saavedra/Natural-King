@@ -14,3 +14,10 @@ export function findProductById(id) {
     include: { category: true },
   })
 }
+
+export function findProductBySlug(slug) {
+  return prisma.product.findFirst({
+    where: { slug, active: true },
+    include: { category: true },
+  })
+}
