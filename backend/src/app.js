@@ -22,3 +22,5 @@ app.use('/api/orders', ordersRouter)
 
 app.use(notFound)
 app.use(errorHandler)
+
+export default app
