@@ -36,7 +36,9 @@ export default function CartDrawer({
     0,
   )
   const cartProductIds = new Set(items.map((item) => item.product.id))
-  const suggestions = catalog.filter((product) => !cartProductIds.has(product.id)).slice(0, 3)
+  const suggestions = catalog
+    .filter((product) => product.slug !== 'kit-viaje-esencial' && !cartProductIds.has(product.id))
+    .slice(0, 3)
 
   useEffect(() => {
     const controller = new AbortController()

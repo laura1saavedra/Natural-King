@@ -14,6 +14,17 @@ const cityDepartments = {
   Barranquilla: 'Atlántico',
 }
 
+const requiredFieldMessages = {
+  recipientName: 'Ingresa tu nombre completo.',
+  recipientEmail: 'Ingresa tu correo electrónico.',
+  recipientPhone: 'Ingresa tu teléfono o WhatsApp.',
+  documentType: 'Selecciona el tipo de documento.',
+  documentNumber: 'Ingresa tu número de documento.',
+  shippingLine1: 'Ingresa la dirección de entrega.',
+  shippingCity: 'Selecciona la ciudad de entrega.',
+  shippingNeighborhood: 'Ingresa tu barrio o localidad.',
+}
+
 function Icon({ name, className = '' }) {
   const paths = {
     cart: <><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/><path d="M2 3h3l2.6 11.2a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 2-1.6L21 8H6.2"/></>,
@@ -52,6 +63,7 @@ export default function Checkout({ items, onOrderCreated }) {
   const [showNotes, setShowNotes] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState({})
   const [createdOrder, setCreatedOrder] = useState(null)
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0)
   const subtotal = items.reduce((sum, item) => sum + Number(item.product.price) * item.quantity, 0)
@@ -61,6 +73,29 @@ export default function Checkout({ items, onOrderCreated }) {
   async function submitOrder(event) {
     event.preventDefault()
     if (!items.length || isSubmitting) return
+
+    const formElement = event.currentTarget
+    const validationErrors = {}
+
+    Object.entries(requiredFieldMessages).forEach(([name, message]) => {
+      const field = formElement.elements.namedItem(name)
+      if (!field || !String(field.value).trim()) validationErrors[name] = message
+    })
+
+    const emailField = formElement.elements.namedItem('recipientEmail')
+    if (emailField?.value && emailField.validity.typeMismatch) {
+      validationErrors.recipientEmail = 'Ingresa un correo electrónico válido.'
+    }
+
+    setFieldErrors(validationErrors)
+
+    if (Object.keys(validationErrors).length) {
+      setError('')
+      const firstInvalidField = formElement.elements.namedItem(Object.keys(validationErrors)[0])
+      firstInvalidField?.focus()
+      firstInvalidField?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      return
+    }
 
     const form = new FormData(event.currentTarget)
     const shippingCity = form.get('shippingCity')
@@ -93,6 +128,28 @@ export default function Checkout({ items, onOrderCreated }) {
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  function validationProps(name) {
+    const hasError = Boolean(fieldErrors[name])
+    return {
+      'aria-invalid': hasError,
+      'aria-describedby': hasError ? `${name}-error` : undefined,
+      onChange: () => {
+        if (!hasError) return
+        setFieldErrors((current) => {
+          const next = { ...current }
+          delete next[name]
+          return next
+        })
+      },
+    }
+  }
+
+  function fieldError(name) {
+    return fieldErrors[name]
+      ? <small className="checkout-field__error" id={`${name}-error`} role="alert">{fieldErrors[name]}</small>
+      : null
   }
 
   if (createdOrder) {
@@ -134,20 +191,23 @@ export default function Checkout({ items, onOrderCreated }) {
         <div className="checkout-step checkout-step--confirmation"><span><Icon name="check"/></span><strong>Confirmación</strong></div>
       </nav>
 
-      <form className="checkout-layout" id="checkout-form" onSubmit={submitOrder}>
+      <form className="checkout-layout" id="checkout-form" onSubmit={submitOrder} noValidate>
         <div className="checkout-main">
           <div className="checkout-card">
             <section className="checkout-section" aria-labelledby="shipping-info-title">
               <header><Icon name="truck"/><div><h1 id="shipping-info-title">Información de envío</h1><p>Completa tus datos para recibir tu pedido.</p></div></header>
+              {Object.keys(fieldErrors).length > 0 && (
+                <p className="checkout-validation-summary" role="alert">Revisa los campos resaltados y completa la información solicitada.</p>
+              )}
               <div className="checkout-fields">
-                <label className="checkout-field checkout-field--wide"><span>Nombre completo <b>*</b></span><input name="recipientName" required autoComplete="name" placeholder="Ej. Laura Valentina Saavedra" /></label>
-                <label className="checkout-field checkout-field--wide"><span>Correo electrónico <b>*</b></span><input name="recipientEmail" type="email" required autoComplete="email" placeholder="Ej. laura@email.com" /></label>
-                <label className="checkout-field"><span>Teléfono / WhatsApp <b>*</b></span><input name="recipientPhone" type="tel" required autoComplete="tel" placeholder="Ej. 300 123 4567" /></label>
-                <label className="checkout-field"><span>Tipo de documento <b>*</b></span><select name="documentType" defaultValue="cc"><option value="cc">Cédula de ciudadanía</option><option value="ce">Cédula de extranjería</option><option value="passport">Pasaporte</option></select></label>
-                <label className="checkout-field"><span>Número de documento <b>*</b></span><input name="documentNumber" required inputMode="numeric" placeholder="Ej. 1234567890" /></label>
-                <label className="checkout-field checkout-field--wide"><span>Dirección de entrega <b>*</b></span><input name="shippingLine1" required autoComplete="street-address" placeholder="Ej. Calle 123 # 45-67, Apto 101" /></label>
-                <label className="checkout-field checkout-field--city"><span>Ciudad <b>*</b></span><select name="shippingCity" required defaultValue=""><option value="" disabled>Selecciona tu ciudad</option>{Object.keys(cityDepartments).map((city) => <option key={city}>{city}</option>)}</select></label>
-                <label className="checkout-field"><span>Barrio / Localidad <b>*</b></span><input name="shippingNeighborhood" required placeholder="Ej. Chapinero" /></label>
+                <label className="checkout-field checkout-field--wide"><span>Nombre completo <b>*</b></span><input name="recipientName" required autoComplete="name" placeholder="Ej. Laura Valentina Saavedra" {...validationProps('recipientName')} />{fieldError('recipientName')}</label>
+                <label className="checkout-field checkout-field--wide"><span>Correo electrónico <b>*</b></span><input name="recipientEmail" type="email" required autoComplete="email" placeholder="Ej. laura@email.com" {...validationProps('recipientEmail')} />{fieldError('recipientEmail')}</label>
+                <label className="checkout-field"><span>Teléfono / WhatsApp <b>*</b></span><input name="recipientPhone" type="tel" required autoComplete="tel" placeholder="Ej. 300 123 4567" {...validationProps('recipientPhone')} />{fieldError('recipientPhone')}</label>
+                <label className="checkout-field"><span>Tipo de documento <b>*</b></span><select name="documentType" required defaultValue="cc" {...validationProps('documentType')}><option value="cc">Cédula de ciudadanía</option><option value="ce">Cédula de extranjería</option><option value="passport">Pasaporte</option></select>{fieldError('documentType')}</label>
+                <label className="checkout-field"><span>Número de documento <b>*</b></span><input name="documentNumber" required inputMode="numeric" placeholder="Ej. 1234567890" {...validationProps('documentNumber')} />{fieldError('documentNumber')}</label>
+                <label className="checkout-field checkout-field--wide"><span>Dirección de entrega <b>*</b></span><input name="shippingLine1" required autoComplete="street-address" placeholder="Ej. Calle 123 # 45-67, Apto 101" {...validationProps('shippingLine1')} />{fieldError('shippingLine1')}</label>
+                <label className="checkout-field checkout-field--city"><span>Ciudad <b>*</b></span><select name="shippingCity" required defaultValue="" {...validationProps('shippingCity')}><option value="" disabled>Selecciona tu ciudad</option>{Object.keys(cityDepartments).map((city) => <option key={city}>{city}</option>)}</select>{fieldError('shippingCity')}</label>
+                <label className="checkout-field"><span>Barrio / Localidad <b>*</b></span><input name="shippingNeighborhood" required placeholder="Ej. Chapinero" {...validationProps('shippingNeighborhood')} />{fieldError('shippingNeighborhood')}</label>
               </div>
               <button className="checkout-notes-toggle" type="button" onClick={() => setShowNotes((value) => !value)} aria-expanded={showNotes}>¿Indicaciones adicionales?</button>
               {showNotes && <label className="checkout-field checkout-notes"><span>Indicaciones para la entrega</span><textarea name="shippingInstructions" rows="3" placeholder="Ej. Dejar en portería" /></label>}

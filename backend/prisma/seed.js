@@ -29,7 +29,7 @@ const products = [
     slug: 'kit-limpieza-hogar',
     sku: 'NK-KIT-HOGAR',
     description: 'Kit práctico con productos esenciales para mantener el hogar limpio y organizado.',
-    price: '55000.00',
+    price: '61000.00',
     stock: 20,
     imageUrl: '/img/kit-hogar.png',
     categorySlug: 'limpieza-hogar',

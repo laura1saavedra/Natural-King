@@ -19,15 +19,27 @@ export default function App() {
   const [cartItems, setCartItems] = useState([])
   const [lastAddedProduct, setLastAddedProduct] = useState(null)
   const [isCartOpen, setIsCartOpen] = useState(false)
-  const currentPage = hash === '#carrito' ? 'cart' : hash === '#checkout' ? 'checkout' : (hash === '#kit-personal' || hash === '#kit_personal') ? 'personal-detail' : hash === '#productos' ? 'products' : 'home'
+  const currentPage = hash === '#carrito'
+    ? 'cart'
+    : hash === '#checkout'
+      ? 'checkout'
+      : (hash === '#kit-personal' || hash === '#kit_personal')
+        ? 'personal-detail'
+        : (hash === '#kit-hogar' || hash === '#kit_hogar')
+          ? 'home-detail'
+          : hash === '#productos'
+            ? 'products'
+            : 'home'
   const currentNavPage = currentPage === 'home' ? 'home' : 'products'
 
   const closeCart = useCallback(() => setIsCartOpen(false), [])
 
   const continueShopping = useCallback(() => {
     setIsCartOpen(false)
-    window.location.hash = '#productos'
-  }, [])
+    window.location.hash = currentPage === 'personal-detail' || currentPage === 'home-detail'
+      ? '#checkout'
+      : '#productos'
+  }, [currentPage])
 
   const goToCart = useCallback(() => {
     setIsCartOpen(false)
@@ -96,7 +108,9 @@ export default function App() {
         ) : currentPage === 'checkout' ? (
           <Checkout items={cartItems} onOrderCreated={completeOrder} />
         ) : currentPage === 'personal-detail' ? (
-          <ProductDetail onAddToCart={addProductToCart} />
+          <ProductDetail kit="personal" onAddToCart={addProductToCart} />
+        ) : currentPage === 'home-detail' ? (
+          <ProductDetail kit="home" onAddToCart={addProductToCart} />
         ) : currentPage === 'products' ? (
           <Products onAddToCart={addProductToCart} />
         ) : (

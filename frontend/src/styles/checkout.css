@@ -79,6 +79,7 @@
 .checkout-section > header > svg { width: 22px; height: 22px; flex: 0 0 auto; margin-top: 1px; }
 .checkout-section h1, .checkout-section h2 { margin: 0; font-size: 19px; line-height: 1.15; }
 .checkout-section header p { margin: 5px 0 0; color: #3f4742; font-size: 12px; }
+.checkout-validation-summary { margin: 0 0 15px; border: 1px solid #efc2bd; border-radius: 7px; background: #fff0ee; padding: 10px 12px; color: #92271f; font-size: 12px; line-height: 1.45; }
 
 .checkout-fields { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 15px 20px; }
 .checkout-field { display: grid; gap: 7px; min-width: 0; font-size: 12px; }
@@ -108,6 +109,8 @@
 .checkout-field input, .checkout-field select { height: 41px; }
 .checkout-field input::placeholder, .checkout-field textarea::placeholder { color: #777d78; opacity: 1; }
 .checkout-field input:focus, .checkout-field select:focus, .checkout-field textarea:focus { border-color: #608150; box-shadow: 0 0 0 3px rgba(73, 112, 52, .1); }
+.checkout-field input[aria-invalid="true"], .checkout-field select[aria-invalid="true"] { border-color: #c43d32; background: #fffafa; box-shadow: 0 0 0 3px rgba(196, 61, 50, .1); }
+.checkout-field__error { margin-top: -2px; color: #a52c23; font-size: 11px; font-weight: 600; line-height: 1.35; }
 .checkout-notes-toggle { margin: 13px 0 0; border: 0; background: transparent; padding: 0; color: #315f22; font: inherit; font-size: 12px; text-decoration: underline; cursor: pointer; }
 .checkout-notes { margin-top: 12px; }
 

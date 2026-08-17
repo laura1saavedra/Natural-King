@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from '../../services/api.js'
+import ProductBenefits from './ProductBenefits.jsx'
 
 const initialProducts = [
   {
@@ -15,18 +16,11 @@ const initialProducts = [
     id: 'catalog-kit-limpieza-hogar',
     slug: 'kit-limpieza-hogar',
     name: 'Kit de limpieza para el hogar',
-    price: 55000,
+    price: 61000,
     stock: 0,
     imageUrl: '/img/kit-hogar.png',
     isCatalogPreview: true,
   },
-]
-
-const benefits = [
-  { icon: '⌁', title: 'Ecológicos', description: 'Productos de baja toxicidad que cuidan el planeta.' },
-  { icon: '✓', title: 'Seguros', description: 'Fórmulas seguras para tu familia y mascotas.' },
-  { icon: '$', title: 'Económicos', description: 'Kits completos que te ahorran tiempo y dinero.' },
-  { icon: '◇', title: 'Prácticos', description: 'Todo lo que necesitas en un solo paquete.' },
 ]
 
 const priceFormatter = new Intl.NumberFormat('es-CO', {
@@ -36,7 +30,9 @@ const priceFormatter = new Intl.NumberFormat('es-CO', {
 })
 
 function getProductHref(product) {
-  return product.slug === 'kit-limpieza-personal' ? '#kit_personal' : null
+  if (product.slug === 'kit-limpieza-personal') return '#kit_personal'
+  if (product.slug === 'kit-limpieza-hogar') return '#kit_hogar'
+  return null
 }
 
 export default function Products({ onAddToCart }) {
@@ -125,17 +121,7 @@ export default function Products({ onAddToCart }) {
 
       <p className="products-status" aria-live="polite">{lastAdded}</p>
 
-      <div className="products-benefits" aria-label="Beneficios de nuestros productos">
-        {benefits.map((benefit) => (
-          <div className="product-benefit" key={benefit.title}>
-            <span className="product-benefit__icon" aria-hidden="true">{benefit.icon}</span>
-            <div>
-              <h3>{benefit.title}</h3>
-              <p>{benefit.description}</p>
-            </div>
-          </div>
-        ))}
-      </div>
+      <ProductBenefits />
     </section>
   )
 }

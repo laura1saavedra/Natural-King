@@ -1,27 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { api } from '../../services/api.js'
+import ProductBenefits from './ProductBenefits.jsx'
 
-const includedItems = [
-  ['Jabón para el cuerpo', '1 unidad'],
-  ['Alcohol gel antibacterial', '1 unidad'],
-  ['Bloqueador solar', '1 unidad'],
-  ['Crema humectante', '1 unidad'],
-  ['Cepillo de dientes', '1 unidad'],
-  ['Crema dental', '1 unidad'],
-  ['Hilo dental', '1 unidad'],
-  ['Desodorante', '1 unidad'],
-  ['Papel higiénico', '1 unidad'],
-  ['Toalla pequeña', '1 unidad'],
-]
-
-const detailBenefits = [
-  ['⌁', 'Ecológicos', 'Productos de baja toxicidad que cuidan el planeta.'],
-  ['✓', 'Seguros', 'Fórmulas seguras para ti y tu familia.'],
-  ['$', 'Económicos', 'Todo lo esencial reunido en un solo kit.'],
-  ['◇', 'Prácticos', 'Listo para llevar y usar donde estés.'],
-]
-
-const detailGalleryImages = [
+const personalGalleryImages = [
   { src: '/img/kit_personal/jabon.png', alt: 'Jabón para el cuerpo' },
   { src: '/img/kit_personal/gel%20antibacterial.png', alt: 'Alcohol gel antibacterial' },
   { src: '/img/kit_personal/bloqueador.png', alt: 'Bloqueador solar' },
@@ -34,30 +15,99 @@ const detailGalleryImages = [
   { src: '/img/kit_personal/toalla.png', alt: 'Toalla pequeña' },
 ]
 
+const homeGalleryImages = [
+  { src: '/img/kit_hogar/polvo.png', alt: 'Detergente en polvo' },
+  { src: '/img/kit_hogar/jabon_ropa.png', alt: 'Jabón para ropa' },
+  { src: '/img/kit_hogar/suavizante.png', alt: 'Suavizante' },
+  { src: '/img/kit_hogar/cloro.png', alt: 'Cloro' },
+  { src: '/img/kit_hogar/desinfectante.png', alt: 'Desinfectante' },
+  { src: '/img/kit_hogar/limpiador.png', alt: 'Limpiador multiusos' },
+  { src: '/img/kit_hogar/lavaloza.png', alt: 'Lavaloza líquido' },
+  { src: '/img/kit_hogar/esponja.png', alt: 'Esponja para lavar' },
+  { src: '/img/kit_hogar/paño.png', alt: 'Paño de limpieza' },
+  { src: '/img/kit_hogar/bolsas.png', alt: 'Bolsas de basura' },
+]
+
 const priceFormatter = new Intl.NumberFormat('es-CO', {
   style: 'currency',
   currency: 'COP',
   maximumFractionDigits: 0,
 })
 
-const initialProduct = {
-  id: 'catalog-kit-limpieza-personal',
-  name: 'Kit de limpieza personal',
-  slug: 'kit-limpieza-personal',
-  description: 'Todo lo que necesitas para tu cuidado diario, en un solo kit práctico, seguro y amigable con el medio ambiente.',
-  price: 74500,
-  stock: 0,
-  imageUrl: '/img/kitPersonal.png',
-  category: { name: 'Cuidado personal' },
+const kitDetails = {
+  personal: {
+    hash: 'kit_personal',
+    titleId: 'personal-kit-title',
+    slug: 'kit-limpieza-personal',
+    fallbackImage: '/img/kitPersonal.png',
+    initialProduct: {
+      id: 'catalog-kit-limpieza-personal',
+      name: 'Kit de limpieza personal',
+      slug: 'kit-limpieza-personal',
+      description: 'Todo lo que necesitas para tu cuidado diario, en un solo kit práctico, seguro y amigable con el medio ambiente.',
+      price: 74500,
+      stock: 0,
+      imageUrl: '/img/kitPersonal.png',
+      category: { name: 'Cuidado personal' },
+    },
+    includedItems: [
+      'Jabón para el cuerpo',
+      'Alcohol gel antibacterial',
+      'Bloqueador solar',
+      'Crema humectante',
+      'Cepillo de dientes',
+      'Crema dental',
+      'Hilo dental',
+      'Desodorante',
+      'Papel higiénico',
+      'Toalla pequeña',
+    ],
+    galleryImages: personalGalleryImages,
+    highlights: ['10 productos esenciales', 'Listo para usar', 'Empaque reutilizable'],
+    ecoText: 'Fórmulas de baja toxicidad',
+    benefits: ['Productos seguros para ti y tu familia', 'Prácticos y listos para usar', 'Cuidado personal responsable'],
+  },
+  home: {
+    hash: 'kit_hogar',
+    titleId: 'home-kit-title',
+    slug: 'kit-limpieza-hogar',
+    fallbackImage: '/img/kit-hogar.png',
+    initialProduct: {
+      id: 'catalog-kit-limpieza-hogar',
+      name: 'Kit de limpieza para el hogar',
+      slug: 'kit-limpieza-hogar',
+      description: 'Todo lo necesario para mantener tu hogar limpio y fresco, reunido en un kit práctico, completo y listo para usar.',
+      price: 61000,
+      stock: 0,
+      imageUrl: '/img/kit-hogar.png',
+      category: { name: 'Limpieza del hogar' },
+    },
+    includedItems: [
+      'Detergente en polvo',
+      'Jabón para ropa',
+      'Suavizante',
+      'Cloro',
+      'Desinfectante',
+      'Limpiador multiusos',
+      'Lavaloza líquido',
+      'Esponja para lavar',
+      'Paño de limpieza',
+      'Bolsas de basura',
+    ],
+    galleryImages: homeGalleryImages,
+    highlights: ['10 productos esenciales', 'Limpieza integral', 'Empaque reutilizable'],
+    ecoText: 'Soluciones para cada espacio',
+    benefits: ['Todo lo esencial para limpiar tu hogar', 'Prácticos y listos para usar', 'Limpieza completa en un solo kit'],
+  },
 }
 
-export default function ProductDetail({ onAddToCart }) {
-  const [product, setProduct] = useState(initialProduct)
+export default function ProductDetail({ kit = 'personal', onAddToCart }) {
+  const detail = kitDetails[kit] || kitDetails.personal
+  const [product, setProduct] = useState(detail.initialProduct)
   const [hasLiveData, setHasLiveData] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [quantity, setQuantity] = useState(1)
-  const [isFavorite, setIsFavorite] = useState(false)
   const [message, setMessage] = useState('')
   const [selectedImage, setSelectedImage] = useState(0)
 
@@ -65,9 +115,16 @@ export default function ProductDetail({ onAddToCart }) {
     const controller = new AbortController()
     let retryTimer
 
+    setProduct(detail.initialProduct)
+    setHasLiveData(false)
+    setIsLoading(true)
+    setQuantity(1)
+    setMessage('')
+    setSelectedImage(0)
+
     async function loadProduct() {
       try {
-        const data = await api('/products/slug/kit-limpieza-personal', { signal: controller.signal })
+        const data = await api(`/products/slug/${detail.slug}`, { signal: controller.signal })
         setProduct(data)
         setQuantity(data.stock > 0 ? 1 : 0)
         setHasLiveData(true)
@@ -89,17 +146,17 @@ export default function ProductDetail({ onAddToCart }) {
       controller.abort()
       window.clearTimeout(retryTimer)
     }
-  }, [])
+  }, [detail])
 
   const galleryImages = useMemo(() => {
     return [
       {
-        src: product.imageUrl || '/img/kitPersonal.png',
+        src: product.imageUrl || detail.fallbackImage,
         alt: `${product.name} completo`,
       },
-      ...detailGalleryImages,
+      ...detail.galleryImages,
     ]
-  }, [product])
+  }, [detail, product])
 
   function addToCart() {
     if (!hasLiveData || product.stock < 1) return
@@ -113,7 +170,7 @@ export default function ProductDetail({ onAddToCart }) {
   const canPurchase = hasLiveData && !isOutOfStock
 
   return (
-    <section className="product-detail" id="kit_personal" aria-labelledby="personal-kit-title" aria-busy={isLoading}>
+    <section className={`product-detail product-detail--${kit}`} id={detail.hash} aria-labelledby={detail.titleId} aria-busy={isLoading}>
       <nav className="product-breadcrumb" aria-label="Ruta de navegación">
         <a href="#inicio"><span aria-hidden="true">⌂</span> Inicio</a>
         <span aria-hidden="true">›</span>
@@ -150,13 +207,11 @@ export default function ProductDetail({ onAddToCart }) {
 
         <div className="product-detail__content">
           <span className="product-detail__tag">{product.category.name}</span>
-          <h1 id="personal-kit-title">{product.name}</h1>
+          <h1 id={detail.titleId}>{product.name}</h1>
           <p className="product-detail__intro">{product.description}</p>
 
           <div className="product-detail__highlights" aria-label="Características principales">
-            <span>✓ 10 productos esenciales</span>
-            <span>✓ Listo para usar</span>
-            <span>✓ Empaque reutilizable</span>
+            {detail.highlights.map((highlight) => <span key={highlight}>✓ {highlight}</span>)}
           </div>
 
           <div className="product-contents">
@@ -167,7 +222,7 @@ export default function ProductDetail({ onAddToCart }) {
               Incluye:
             </h2>
             <ul>
-              {includedItems.map(([name, amount]) => (
+              {detail.includedItems.map((name) => (
                 <li key={name}>
                   <span className="product-contents__item">
                     <span className="product-contents__product-icon" aria-hidden="true">
@@ -175,14 +230,17 @@ export default function ProductDetail({ onAddToCart }) {
                     </span>
                     {name}
                   </span>
-                  <span>{amount}</span>
+                  <span>1 unidad</span>
                 </li>
               ))}
             </ul>
           </div>
 
           <div className="product-detail__eco">
-            <span>♧ Fórmulas de baja toxicidad</span>
+            <span>
+              <img className="product-detail__eco-icon" src="/img/iconos/icono_flor.png" alt="" aria-hidden="true" />
+              {detail.ecoText}
+            </span>
             <span>♻ Empaque reutilizable</span>
           </div>
         </div>
@@ -194,7 +252,7 @@ export default function ProductDetail({ onAddToCart }) {
               <p>{product.name}</p>
             </div>
             <div className="product-purchase__summary-image" aria-hidden="true">
-              <img src={product.imageUrl || '/img/kitPersonal.png'} alt="" />
+              <img src={product.imageUrl || detail.fallbackImage} alt="" />
             </div>
           </div>
 
@@ -218,26 +276,19 @@ export default function ProductDetail({ onAddToCart }) {
             <img className="product-purchase__cart-icon" src="/img/iconos/carrito_blanco.png" alt="" aria-hidden="true" />
             {!hasLiveData ? 'Consultando disponibilidad' : isOutOfStock ? 'Producto agotado' : 'Agregar al carrito'}
           </button>
-          <button
-            className={`product-purchase__favorite ${isFavorite ? 'is-active' : ''}`}
-            type="button"
-            onClick={() => setIsFavorite((value) => !value)}
-            aria-pressed={isFavorite}
-          >
-            <span aria-hidden="true">♡</span> {isFavorite ? 'Agregado a favoritos' : 'Agregar a favoritos'}
-          </button>
 
           <p className="product-purchase__status" aria-live="polite">{message}</p>
 
           <div className="product-purchase__benefits">
-            <h3><span aria-hidden="true">♧</span> Beneficios</h3>
-            <p>✓ Productos seguros para ti y tu familia</p>
-            <p>✓ Prácticos y listos para usar</p>
-            <p>✓ Cuidado personal responsable</p>
+            <h3>
+              <img className="product-purchase__benefits-icon" src="/img/iconos/icono_flor.png" alt="" aria-hidden="true" />
+              Beneficios
+            </h3>
+            {detail.benefits.map((benefit) => <p key={benefit}>✓ {benefit}</p>)}
           </div>
 
           <div className="product-purchase__shipping">
-            <span aria-hidden="true">▱</span>
+            <img className="product-purchase__shipping-icon" src="/img/iconos/camion.png" alt="" aria-hidden="true" />
             <div>
               <h3>Envíos a todo el país</h3>
               <p>Recibe tu kit en la puerta de tu hogar.</p>
@@ -246,26 +297,7 @@ export default function ProductDetail({ onAddToCart }) {
         </aside>
       </div>
 
-      <div className="product-detail__benefit-strip" aria-label="Ventajas del kit">
-        {detailBenefits.map(([icon, title, description]) => (
-          <div key={title}>
-            <span
-              className={`product-detail__benefit-icon ${title === 'Ecológicos' || title === 'Seguros' ? 'product-detail__benefit-icon--image' : ''}`}
-              aria-hidden="true"
-            >
-              {title === 'Ecológicos' ? (
-                <img src="/img/iconos/icono_flor.png" alt="" />
-              ) : title === 'Seguros' ? (
-                <img src="/img/iconos/seguro.png" alt="" />
-              ) : icon}
-            </span>
-            <div>
-              <h3>{title}</h3>
-              <p>{description}</p>
-            </div>
-          </div>
-        ))}
-      </div>
+      <ProductBenefits />
     </section>
   )
 }

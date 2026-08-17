@@ -45,11 +45,18 @@ export default function CartPage({ items, onQuantityChange, onRemove }) {
           <span className="cart-page__title-icon"><CartSvg /></span>
           <div>
             <h1>Tu carrito</h1>
-            <nav aria-label="Migas de pan"><a href="#inicio">Inicio</a><span>›</span><strong>Carrito de compras</strong></nav>
           </div>
         </div>
         <div className="cart-page__safe"><ShieldSvg /><span><strong>Compra 100% segura</strong><small>Tus datos están protegidos</small></span></div>
       </header>
+
+      <nav className="product-breadcrumb cart-page__breadcrumb" aria-label="Ruta de navegación">
+        <a href="#inicio"><span aria-hidden="true">⌂</span> Inicio</a>
+        <span aria-hidden="true">›</span>
+        <a href="#productos">Productos</a>
+        <span aria-hidden="true">›</span>
+        <span>Carrito de compras</span>
+      </nav>
 
       <div className="cart-page__layout">
         <section className="cart-products" aria-label="Productos en el carrito">
