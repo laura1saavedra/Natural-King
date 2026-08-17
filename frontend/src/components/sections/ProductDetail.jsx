@@ -125,7 +125,11 @@ export default function ProductDetail({ onAddToCart }) {
       <div className="product-detail__layout">
         <div className="product-gallery">
           <div className="product-gallery__main">
-            <img src={galleryImages[selectedImage].src} alt={galleryImages[selectedImage].alt} />
+            <img
+              className={`product-gallery__image ${selectedImage === 0 ? 'product-gallery__image--kit' : 'product-gallery__image--product'}`}
+              src={galleryImages[selectedImage].src}
+              alt={galleryImages[selectedImage].alt}
+            />
             <span className="product-gallery__badge">Kit completo</span>
           </div>
           <div className="product-gallery__thumbs" aria-label="Imágenes del producto">
@@ -189,7 +193,9 @@ export default function ProductDetail({ onAddToCart }) {
               <h2>Tu kit</h2>
               <p>{product.name}</p>
             </div>
-            <img src={product.imageUrl || '/img/kitPersonal.png'} alt="" aria-hidden="true" />
+            <div className="product-purchase__summary-image" aria-hidden="true">
+              <img src={product.imageUrl || '/img/kitPersonal.png'} alt="" />
+            </div>
           </div>
 
           <p className="product-purchase__price" aria-live="polite">
@@ -209,7 +215,8 @@ export default function ProductDetail({ onAddToCart }) {
           </div>
 
           <button className="product-purchase__cart" type="button" onClick={addToCart} disabled={!canPurchase}>
-            <span aria-hidden="true">▰</span> {!hasLiveData ? 'Consultando disponibilidad' : isOutOfStock ? 'Producto agotado' : 'Agregar al carrito'}
+            <img className="product-purchase__cart-icon" src="/img/iconos/carrito_blanco.png" alt="" aria-hidden="true" />
+            {!hasLiveData ? 'Consultando disponibilidad' : isOutOfStock ? 'Producto agotado' : 'Agregar al carrito'}
           </button>
           <button
             className={`product-purchase__favorite ${isFavorite ? 'is-active' : ''}`}
@@ -242,7 +249,16 @@ export default function ProductDetail({ onAddToCart }) {
       <div className="product-detail__benefit-strip" aria-label="Ventajas del kit">
         {detailBenefits.map(([icon, title, description]) => (
           <div key={title}>
-            <span className="product-detail__benefit-icon" aria-hidden="true">{icon}</span>
+            <span
+              className={`product-detail__benefit-icon ${title === 'Ecológicos' || title === 'Seguros' ? 'product-detail__benefit-icon--image' : ''}`}
+              aria-hidden="true"
+            >
+              {title === 'Ecológicos' ? (
+                <img src="/img/iconos/icono_flor.png" alt="" />
+              ) : title === 'Seguros' ? (
+                <img src="/img/iconos/seguro.png" alt="" />
+              ) : icon}
+            </span>
             <div>
               <h3>{title}</h3>
               <p>{description}</p>
