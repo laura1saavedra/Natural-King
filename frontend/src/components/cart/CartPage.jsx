@@ -68,7 +68,7 @@ export default function CartPage({ items, onQuantityChange, onRemove }) {
               <div className="cart-product-row__quantity" aria-label={`Cantidad de ${product.name}`}>
                 <button type="button" onClick={() => onQuantityChange(product.id, quantity - 1)} disabled={quantity <= 1} aria-label="Disminuir cantidad">−</button>
                 <output>{quantity}</output>
-                <button type="button" onClick={() => onQuantityChange(product.id, quantity + 1)} disabled={quantity >= product.stock} aria-label="Aumentar cantidad">+</button>
+                <button type="button" onClick={() => onQuantityChange(product.id, quantity + 1)} aria-label="Aumentar cantidad">+</button>
               </div>
               <strong className="cart-product-row__subtotal" data-label="Subtotal">{priceFormatter.format(Number(product.price) * quantity)}</strong>
               <button className="cart-product-row__remove" type="button" onClick={() => onRemove(product.id)} aria-label={`Eliminar ${product.name}`}><TrashSvg /></button>

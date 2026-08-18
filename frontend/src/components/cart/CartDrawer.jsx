@@ -103,7 +103,7 @@ export default function CartDrawer({
               <div className="cart-quantity" aria-label={`Cantidad de ${product.name}`}>
                 <button type="button" onClick={() => onQuantityChange(product.id, quantity - 1)} disabled={quantity <= 1} aria-label="Disminuir cantidad">−</button>
                 <output aria-live="polite">{quantity}</output>
-                <button type="button" onClick={() => onQuantityChange(product.id, quantity + 1)} disabled={quantity >= product.stock} aria-label="Aumentar cantidad">+</button>
+                <button type="button" onClick={() => onQuantityChange(product.id, quantity + 1)} aria-label="Aumentar cantidad">+</button>
               </div>
               <button className="cart-remove" type="button" onClick={() => onRemove(product.id)}>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7m4 4v5m4-5v5" /></svg>
@@ -125,7 +125,7 @@ export default function CartDrawer({
                   <h4>{product.name}</h4>
                   <div>
                     <strong>{priceFormatter.format(Number(product.price))}</strong>
-                    <button type="button" onClick={() => onAddProduct(product, 1)} disabled={product.stock < 1} aria-label={`Agregar ${product.name} al carrito`}>
+                    <button type="button" onClick={() => onAddProduct(product, 1)} aria-label={`Agregar ${product.name} al carrito`}>
                       +
                     </button>
                   </div>

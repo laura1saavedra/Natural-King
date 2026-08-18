@@ -77,13 +77,10 @@ export async function createOrder(input) {
   }
 
   const productMap = new Map(products.map((product) => [product.id, product]))
-  const orderItems = requestedItems.map(({ productId, quantity }) => {
-    const product = productMap.get(productId)
-    if (product.stock < quantity) {
-      throw requestError(`No hay existencias suficientes de ${product.name}.`, 409)
-    }
-    return { product, quantity }
-  })
+  const orderItems = requestedItems.map(({ productId, quantity }) => ({
+    product: productMap.get(productId),
+    quantity,
+  }))
 
   const subtotal = orderItems.reduce(
     (total, { product, quantity }) => total + Number(product.price) * quantity,
@@ -94,17 +91,6 @@ export async function createOrder(input) {
   const number = createOrderNumber()
 
   return prisma.$transaction(async (transaction) => {
-    for (const { product, quantity } of orderItems) {
-      const updated = await transaction.product.updateMany({
-        where: { id: product.id, active: true, stock: { gte: quantity } },
-        data: { stock: { decrement: quantity } },
-      })
-
-      if (updated.count !== 1) {
-        throw requestError(`Las existencias de ${product.name} cambiaron. Revisa tu carrito.`, 409)
-      }
-    }
-
     const order = await transaction.order.create({
       data: {
         number,
@@ -146,15 +132,6 @@ export async function createOrder(input) {
         },
       },
       include: { items: true, payments: true },
-    })
-
-    await transaction.inventoryMovement.createMany({
-      data: orderItems.map(({ product, quantity }) => ({
-        productId: product.id,
-        quantity: -quantity,
-        reason: 'ORDER_CREATED',
-        reference: order.number,
-      })),
     })
 
     return order

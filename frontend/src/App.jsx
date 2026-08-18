@@ -47,7 +47,7 @@ export default function App() {
   }, [])
 
   const addProductToCart = useCallback((product, quantity = 1) => {
-    if (!product || product.stock < 1) return
+    if (!product) return
 
     const requestedQuantity = Math.max(1, Number(quantity) || 1)
 
@@ -56,11 +56,11 @@ export default function App() {
 
       if (existingItem) {
         return current.map((item) => item.product.id === product.id
-          ? { product, quantity: Math.min(product.stock, item.quantity + requestedQuantity) }
+          ? { product, quantity: item.quantity + requestedQuantity }
           : item)
       }
 
-      return [...current, { product, quantity: Math.min(product.stock, requestedQuantity) }]
+      return [...current, { product, quantity: requestedQuantity }]
     })
     setLastAddedProduct(product)
     setIsCartOpen(true)
@@ -68,7 +68,7 @@ export default function App() {
 
   const changeCartQuantity = useCallback((productId, quantity) => {
     setCartItems((current) => current.map((item) => item.product.id === productId
-      ? { ...item, quantity: Math.min(item.product.stock, Math.max(1, quantity)) }
+      ? { ...item, quantity: Math.max(1, quantity) }
       : item))
   }, [])
 

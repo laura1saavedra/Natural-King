@@ -86,7 +86,7 @@ export default function Products({ onAddToCart }) {
         <div className="products-grid">
           {products.map((product) => {
             const href = getProductHref(product)
-            const canAddToCart = !product.isCatalogPreview && product.stock > 0
+            const canAddToCart = !product.isCatalogPreview
 
             return (
               <article className="product-card" key={product.id}>

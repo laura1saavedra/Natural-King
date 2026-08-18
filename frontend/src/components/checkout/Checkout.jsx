@@ -252,7 +252,7 @@ export default function Checkout({ items, onOrderCreated }) {
             <div><span>Descuento</span><b className="order-green">{formatter.format(0)}</b></div>
             <div className="order-total"><strong>Total a pagar</strong><b>{formatter.format(total)}</b></div>
           </div>
-          <div className="secure-box"><Icon name="shield"/><div><strong>Compra segura</strong><p>El servidor verificará nuevamente precios y existencias antes de crear el pedido.</p></div></div>
+          <div className="secure-box"><Icon name="shield"/><div><strong>Compra segura</strong><p>El servidor verificará nuevamente los productos y precios antes de crear el pedido.</p></div></div>
           {error && <p className="checkout-submit-error" role="alert">{error}</p>}
           <button className="pay-button" type="submit" disabled={isSubmitting}><Icon name="lock"/>{isSubmitting ? 'Creando pedido...' : 'Confirmar pedido'}</button>
           <p className="order-terms">Al continuar, aceptas nuestros <a href="#terminos">Términos y Condiciones</a><br/>y la <a href="#privacidad">Política de Privacidad.</a></p>

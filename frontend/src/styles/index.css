@@ -1470,6 +1470,17 @@ a {
   line-height: 1.55;
 }
 
+.site-footer__contact a {
+  color: inherit;
+  text-decoration-color: rgba(255, 255, 255, .42);
+  text-underline-offset: 3px;
+}
+
+.site-footer__contact a:hover,
+.site-footer__contact a:focus-visible {
+  color: #fff;
+}
+
 .site-footer__leaf {
   display: block;
   margin-top: 27px;
@@ -1525,6 +1536,26 @@ a {
 .site-footer__subscribe button:focus-visible {
   background: var(--brand-gold-hover);
   transform: translateX(2px);
+}
+
+.site-footer__subscribe button:disabled,
+.site-footer__subscribe input:disabled {
+  cursor: wait;
+  opacity: .7;
+}
+
+.site-footer__subscribe .site-footer__subscribe-status {
+  margin: 10px 0 0;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.site-footer__subscribe-status--success {
+  color: #f4e08d !important;
+}
+
+.site-footer__subscribe-status--error {
+  color: #ffd1cb !important;
 }
 
 .site-footer__copyright {

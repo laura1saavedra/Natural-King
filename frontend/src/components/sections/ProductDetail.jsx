@@ -126,7 +126,7 @@ export default function ProductDetail({ kit = 'personal', onAddToCart }) {
       try {
         const data = await api(`/products/slug/${detail.slug}`, { signal: controller.signal })
         setProduct(data)
-        setQuantity(data.stock > 0 ? 1 : 0)
+        setQuantity(1)
         setHasLiveData(true)
         setError('')
       } catch (requestError) {
@@ -159,15 +159,14 @@ export default function ProductDetail({ kit = 'personal', onAddToCart }) {
   }, [detail, product])
 
   function addToCart() {
-    if (!hasLiveData || product.stock < 1) return
+    if (!hasLiveData) return
 
     setMessage(`${quantity} kit${quantity > 1 ? 's' : ''} agregado${quantity > 1 ? 's' : ''} al carrito`)
     onAddToCart(product, quantity)
   }
 
   const unitPrice = Number(product.price)
-  const isOutOfStock = hasLiveData && product.stock < 1
-  const canPurchase = hasLiveData && !isOutOfStock
+  const canPurchase = hasLiveData
 
   return (
     <section className={`product-detail product-detail--${kit}`} id={detail.hash} aria-labelledby={detail.titleId} aria-busy={isLoading}>
@@ -259,8 +258,8 @@ export default function ProductDetail({ kit = 'personal', onAddToCart }) {
           <p className="product-purchase__price" aria-live="polite">
             {priceFormatter.format(unitPrice * quantity)}
           </p>
-          <p className={`product-purchase__availability ${isOutOfStock ? 'is-out' : ''} ${!hasLiveData ? 'is-pending' : ''}`}>
-            {!hasLiveData ? 'Disponibilidad por confirmar' : isOutOfStock ? 'Producto agotado' : `${product.stock} unidades disponibles`}
+          <p className={`product-purchase__availability ${!hasLiveData ? 'is-pending' : ''}`}>
+            {!hasLiveData ? 'Disponibilidad por confirmar' : 'Unidades disponibles sin límite'}
           </p>
           {error && <p className="product-purchase__connection" role="status">{error}</p>}
 
@@ -269,12 +268,12 @@ export default function ProductDetail({ kit = 'personal', onAddToCart }) {
           <div className="quantity-selector" aria-label="Cantidad">
             <button type="button" onClick={() => setQuantity((value) => Math.max(1, value - 1))} disabled={!canPurchase || quantity <= 1} aria-label="Disminuir cantidad">−</button>
             <output aria-live="polite">{quantity}</output>
-            <button type="button" onClick={() => setQuantity((value) => Math.min(product.stock, value + 1))} disabled={!canPurchase || quantity >= product.stock} aria-label="Aumentar cantidad">+</button>
+            <button type="button" onClick={() => setQuantity((value) => value + 1)} disabled={!canPurchase} aria-label="Aumentar cantidad">+</button>
           </div>
 
           <button className="product-purchase__cart" type="button" onClick={addToCart} disabled={!canPurchase}>
             <img className="product-purchase__cart-icon" src="/img/iconos/carrito_blanco.png" alt="" aria-hidden="true" />
-            {!hasLiveData ? 'Consultando disponibilidad' : isOutOfStock ? 'Producto agotado' : 'Agregar al carrito'}
+            {!hasLiveData ? 'Consultando disponibilidad' : 'Agregar al carrito'}
           </button>
 
           <p className="product-purchase__status" aria-live="polite">{message}</p>

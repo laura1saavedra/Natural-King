@@ -1,3 +1,6 @@
+import { useState } from 'react'
+import { api } from '../../services/api.js'
+
 const SocialIcon = ({ children, label }) => (
   <span className="footer-social" aria-label={label} role="img">
     {children}
@@ -5,8 +8,26 @@ const SocialIcon = ({ children, label }) => (
 )
 
 export default function Footer() {
-  const handleSubscribe = (event) => {
+  const [subscription, setSubscription] = useState({ status: 'idle', message: '' })
+
+  const handleSubscribe = async (event) => {
     event.preventDefault()
+    const form = event.currentTarget
+    const email = new FormData(form).get('email')
+
+    setSubscription({ status: 'loading', message: 'Registrando tu correo…' })
+
+    try {
+      const result = await api('/subscriptions', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      })
+
+      form.reset()
+      setSubscription({ status: 'success', message: result.message })
+    } catch (error) {
+      setSubscription({ status: 'error', message: error.message })
+    }
   }
 
   return (
@@ -34,8 +55,9 @@ export default function Footer() {
 
         <div className="site-footer__contact">
           <h2>CONTACTO</h2>
-          <p>Natural King S.A.S.</p>
-          <p>Bogotá, Colombia</p>
+          <p><a href="tel:+573192127321">319 212 7321</a></p>
+          <p>Calle 9 #11-99 A, Bogotá</p>
+          <p><a href="mailto:naturalkingsas@gmail.com">naturalkingsas@gmail.com</a></p>
         </div>
 
         <div className="site-footer__subscribe">
@@ -43,11 +65,16 @@ export default function Footer() {
           <p>Recibe novedades y contenido sobre nuestras soluciones de limpieza y cuidado.</p>
           <form onSubmit={handleSubscribe}>
             <label className="sr-only" htmlFor="footer-email">Tu correo electrónico</label>
-            <input id="footer-email" name="email" type="email" placeholder="Tu correo electrónico" required />
-            <button type="submit" aria-label="Suscribirse">
+            <input id="footer-email" name="email" type="email" autoComplete="email" placeholder="Tu correo electrónico" required disabled={subscription.status === 'loading'} />
+            <button type="submit" aria-label="Suscribirse" disabled={subscription.status === 'loading'}>
               <span aria-hidden="true">→</span>
             </button>
           </form>
+          {subscription.message && (
+            <p className={`site-footer__subscribe-status site-footer__subscribe-status--${subscription.status}`} role="status" aria-live="polite">
+              {subscription.message}
+            </p>
+          )}
         </div>
       </div>
 
